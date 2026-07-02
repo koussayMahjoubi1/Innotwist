@@ -1,0 +1,46 @@
+/* InnoTwist Color System - Single Source of Truth */
+
+:root {
+  /* CSS HEX */
+  --ocean-blue-hex: #138EC9ff;
+  --ocean-twilight-hex: #414ABEff;
+  --white-hex: #FFFFFFff;
+  --laser-blue-hex: #2E5FC4ff;
+  --white-2-hex: #FFFFFFff;
+
+  /* CSS HSL */
+  --ocean-blue: hsla(199, 83%, 43%, 1);
+  --ocean-twilight: hsla(236, 49%, 50%, 1);
+  --white: hsla(0, 0%, 100%, 1);
+  --laser-blue: hsla(220, 62%, 47%, 1);
+  --white-2: hsla(0, 0%, 100%, 1);
+
+  /* Gradients */
+  --gradient-top: linear-gradient(0deg, #138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+  --gradient-right: linear-gradient(90deg, #138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+  --gradient-bottom: linear-gradient(180deg, #138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+  --gradient-left: linear-gradient(270deg, #138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+  --gradient-top-right: linear-gradient(45deg, #138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+  --gradient-bottom-right: linear-gradient(135deg, #138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+  --gradient-top-left: linear-gradient(225deg, #138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+  --gradient-bottom-left: linear-gradient(315deg, #138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+  --gradient-radial: radial-gradient(#138EC9ff, #414ABEff, #FFFFFFff, #2E5FC4ff, #FFFFFFff);
+}
+
+/* Tailwind CSS v4 Theme Extension */
+@theme {
+  --color-ocean-blue: var(--ocean-blue);
+  --color-ocean-twilight: var(--ocean-twilight);
+  --color-laser-blue: var(--laser-blue);
+  --color-white-2: var(--white-2);
+
+  --background-image-gradient-top: var(--gradient-top);
+  --background-image-gradient-right: var(--gradient-right);
+  --background-image-gradient-bottom: var(--gradient-bottom);
+  --background-image-gradient-left: var(--gradient-left);
+  --background-image-gradient-tr: var(--gradient-top-right);
+  --background-image-gradient-br: var(--gradient-bottom-right);
+  --background-image-gradient-tl: var(--gradient-top-left);
+  --background-image-gradient-bl: var(--gradient-bottom-left);
+  --background-image-gradient-radial: var(--gradient-radial);
+}
