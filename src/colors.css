@@ -29,6 +29,9 @@
 
 /* Tailwind CSS v4 Theme Extension */
 @theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-hand: 'Caveat', cursive;
+
   --color-ocean-blue: var(--ocean-blue);
   --color-ocean-twilight: var(--ocean-twilight);
   --color-laser-blue: var(--laser-blue);
