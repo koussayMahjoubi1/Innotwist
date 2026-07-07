@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import LottieComponent from 'lottie-react'
 import { locales } from './locales'
 import type { Lang } from './locales'
@@ -15,8 +15,11 @@ function App() {
   const [lang, setLang] = useState<Lang>('fr')
   const [activeSection, setActiveSection] = useState<Section>('home')
   const [menuOpen, setMenuOpen] = useState(false)
+  
+  // Selected course details popup state
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null)
 
-  // Lightweight Client-side Routing state
+  // Lightweight Client-side Routing state for Admin view
   const [currentPath, setCurrentPath] = useState(() => {
     const path = window.location.pathname
     const hash = window.location.hash
@@ -26,8 +29,80 @@ function App() {
     return '/'
   })
 
-  const isScrollingRef = useRef(false)
-  const touchStartYRef = useRef(0)
+  // Contact Form states
+  const [contactName, setContactName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactSubject, setContactSubject] = useState('')
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactSending, setContactSending] = useState(false)
+  const [contactSuccess, setContactSuccess] = useState(false)
+
+  // Course Details syllabus configuration dictionary
+  const coursesData: Record<string, { badge: string; curriculum: string[]; whatsappText: string }> = {
+    web: {
+      badge: lang === 'fr' ? "12 Semaines | Débutant à Avancé" : lang === 'en' ? "12 Weeks | Beginner to Advanced" : "١٢ أسبوعاً | من المبتدئ إلى المتقدم",
+      curriculum: lang === 'fr' 
+        ? ["Bases du Web: HTML5, CSS3 & Responsive Design", "Programmation JS: Variables, Fonctions & API", "Frameworks Modernes: React.js & TailwindCSS", "Outils Pro: Versioning Git, Hébergement & SEO"]
+        : lang === 'en'
+        ? ["Web Foundations: HTML5, CSS3 & Responsive Design", "JS Programming: Variables, Functions & APIs", "Modern Frameworks: React.js & TailwindCSS", "Pro Tools: Git Versioning, Hosting & SEO"]
+        : ["أساسيات الويب: HTML5 و CSS3 والتصميم المتجاوب", "برمجة جافا سكريبت: المتغيرات والدوال والواجهات البرمجية", "أطر العمل الحديثة: React.js و TailwindCSS", "أدوات المحترفين: إدارة النسخ Git، الاستضافة والسيو"],
+      whatsappText: "Bonjour, je souhaite m'inscrire à la formation Développement Web."
+    },
+    mobile: {
+      badge: lang === 'fr' ? "10 Semaines | Intermédiaire" : lang === 'en' ? "10 Weeks | Intermediate" : "١٠ أسابيع | مستوى متوسط",
+      curriculum: lang === 'fr'
+        ? ["Introduction à React Native & Flutter", "Gestion d'état global & API REST Integration", "Accès matériel: GPS, Appareil photo & LocalStorage", "Déploiement: Publication sur App Store & Google Play"]
+        : lang === 'en'
+        ? ["Introduction to React Native & Flutter", "Global State Management & REST API Integration", "Hardware Access: GPS, Camera & LocalStorage", "Deployment: App Store & Google Play Publication"]
+        : ["مقدمة في React Native و Flutter", "إدارة الحالة العالمية وتكامل واجهات REST API", "الوصول إلى أجهزة الهاتف: GPS، الكاميرا والتخزين المحلي", "النشر: رفع التطبيقات على متجر App Store و Google Play"],
+      whatsappText: "Bonjour, je souhaite m'inscrire à la formation Développement Mobile."
+    },
+    marketing: {
+      badge: lang === 'fr' ? "8 Semaines | Tous Niveaux" : lang === 'en' ? "8 Weeks | All Levels" : "٨ أسابيع | جميع المستويات",
+      curriculum: lang === 'fr'
+        ? ["Optimisation SEO: Moteurs de recherche & Mots-clés", "Publicité Payante: Facebook, Instagram & Google Ads", "Stratégie de Contenu & Copywriting persuasif", "Analyse & Rapports: Google Analytics 4"]
+        : lang === 'en'
+        ? ["SEO Optimization: Search Engines & Keywords", "Paid Ads: Facebook, Instagram & Google Ads", "Content Strategy & Persuasive Copywriting", "Analytics & Reports: Google Analytics 4"]
+        : ["تحسين السيو: محركات البحث والكلمات المفتاحية", "الإعلانات المدفوعة: إعلانات فيسبوك وانستغرام وجوجل", "استراتيجية المحتوى وكتابة الإعلانات المؤثرة", "التحليل والتقارير: Google Analytics 4"],
+      whatsappText: "Bonjour, je souhaite m'inscrire à la formation Marketing Digital."
+    },
+    business: {
+      badge: lang === 'fr' ? "6 Semaines | Professionnel" : lang === 'en' ? "6 Weeks | Professional" : "٦ أسابيع | للمحترفين",
+      curriculum: lang === 'fr'
+        ? ["Processus de vente: Prospection & Qualification", "Techniques de négociation & Traitement des objections", "Stratégie B2B & Cold Outreach (Emailing, LinkedIn)", "Outils CRM: HubSpot & Pipeline Management"]
+        : lang === 'en'
+        ? ["Sales Processes: Prospecting & Qualification", "Negotiation Techniques & Objection Handling", "B2B Strategy & Cold Outreach (Emailing, LinkedIn)", "CRM Tools: HubSpot & Pipeline Management"]
+        : ["عمليات البيع: التنقيب وتأهيل العملاء", "تقنيات التفاوض والتعامل مع الاعتراضات", "استراتيجية B2B والتواصل البارد (البريد الإلكتروني ولينكد إن)", "أدوات CRM: إدارة HubSpot وخطوط المبيعات"],
+      whatsappText: "Bonjour, je souhaite m'inscrire à la formation Business Development."
+    },
+    iot: {
+      badge: lang === 'fr' ? "10 Semaines | Technique" : lang === 'en' ? "10 Weeks | Technical" : "١٠ أسابيع | تقني",
+      curriculum: lang === 'fr'
+        ? ["Configuration des microcontrôleurs (ESP32, Raspberry Pi)", "Protocoles de communication: MQTT, HTTP, WebSockets", "Intégration Cloud: AWS IoT & Adafruit IO", "Création de dashboards de contrôle en temps réel"]
+        : lang === 'en'
+        ? ["Microcontroller Config (ESP32, Raspberry Pi)", "Communication Protocols: MQTT, HTTP, WebSockets", "Cloud Integration: AWS IoT & Adafruit IO", "Real-time Control Dashboard Creation"]
+        : ["إعداد المتحكمات الدقيقة (ESP32 و Raspberry Pi)", "بروتوكولات الاتصال: MQTT، HTTP، WebSockets", "التكامل السحابي: AWS IoT و Adafruit IO", "إنشاء لوحات تحكم للمراقبة في الوقت الفعلي"],
+      whatsappText: "Bonjour, je souhaite m'inscrire à la formation IoT & Objets Connectés."
+    },
+    languages: {
+      badge: lang === 'fr' ? "Flexible | Professionnel" : lang === 'en' ? "Flexible | Professional" : "مرن | للمحترفين",
+      curriculum: lang === 'fr'
+        ? ["Anglais & Allemand des affaires (Business English/German)", "Rédaction professionnelle (E-mails, CV, Rapports)", "Communication orale: Présentations & Pitchs", "Préparation aux entretiens d'embauche internationaux"]
+        : lang === 'en'
+        ? ["Business English & German vocabulary", "Professional Writing (Emails, CV, Reports)", "Oral Communication: Presentations & Pitches", "International Job Interview Preparation"]
+        : ["لغة إنجليزية وألمانية للأعمال", "الكتابة المهنية (البريد الإلكتروني، السيرة الذاتية، التقارير)", "التواصل الشفهي: العروض التقديمية وطرح الأفكار", "التحضير للمقابلات الشخصية الدولية"],
+      whatsappText: "Bonjour, je souhaite m'inscrire à la formation Langues & Com."
+    },
+    robotics: {
+      badge: lang === 'fr' ? "8 Semaines | Junior (8-15 ans)" : lang === 'en' ? "8 Weeks | Junior (8-15 years)" : "٨ أسابيع | للصغار (٨-١٥ سنة)",
+      curriculum: lang === 'fr'
+        ? ["Introduction à l'électricité & composants électroniques", "Programmation visuelle simplifiée (mBlock & Scratch)", "Montage et programmation de voitures robotiques intelligentes", "Résolution de défis logiques et projets de groupe"]
+        : lang === 'en'
+        ? ["Introduction to electricity & electronic components", "Simplified visual coding (mBlock & Scratch)", "Assembling & programming smart robotic cars", "Solving logic puzzles & team projects"]
+        : ["مقدمة في الكهرباء والمكونات الإلكترونية", "البرمجة المرئية المبسطة (mBlock و Scratch)", "تركيب وبرمجة سيارات الروبوت الذكية", "حل الألغاز المنطقية ومشاريع العمل الجماعي"],
+      whatsappText: "Bonjour, je souhaite m'inscrire à la formation Robotique & Arduino Junior."
+    }
+  }
 
   // Synchronize lightweight client-side routing pathname and hash triggers
   useEffect(() => {
@@ -69,173 +144,107 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
-  // Reset scroll positions back to top when active section changes
+  // IntersectionObserver to update active navbar highlight on scroll
   useEffect(() => {
-    const resetScroll = () => {
-      const rootEl = document.getElementById('root-container')
-      if (rootEl) rootEl.scrollTop = 0
-
-      const scrollEl = document.getElementById('scroll-content')
-      if (scrollEl) scrollEl.scrollTop = 0
-    }
-
-    // Reset immediately
-    resetScroll()
-
-    // Reset multiple times to cancel browser inertial momentum scrolls on mobile
-    const t1 = setTimeout(resetScroll, 50)
-    const t2 = setTimeout(resetScroll, 150)
-    const t3 = setTimeout(resetScroll, 300)
-
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-      clearTimeout(t3)
-    }
-  }, [activeSection])
-
-  // Wheel and Swipe listeners for presentation-style section switching
-  useEffect(() => {
-    // Disable slide transitions if we are on the admin path
     if (currentPath === '/admin') return
 
-    const sections: Section[] = ['home', 'formations', 'about', 'contact']
-
-    const handleWheel = (e: WheelEvent) => {
-      const isDesktop = window.innerWidth >= 1024
-      let scrollEl: HTMLElement | null = null
-
-      if (isDesktop) {
-        if (activeSection === 'formations') {
-          scrollEl = document.getElementById('scroll-content')
-        } else if (activeSection === 'about') {
-          scrollEl = document.getElementById('about-scroll-content')
-        }
-      } else {
-        scrollEl = document.getElementById('root-container')
-      }
-
-      let isScrollable = false
-      let isAtTop = true
-      let isAtBottom = true
-
-      if (scrollEl) {
-        isScrollable = scrollEl.scrollHeight > scrollEl.clientHeight
-        if (isScrollable) {
-          isAtTop = scrollEl.scrollTop <= 0
-          // 5px threshold ensures the scrollbar must reach the very bottom before switching
-          isAtBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 5
-        }
-      }
-
-      // If container is scrollable and not at boundary, let natural scrolling work
-      if (isScrollable) {
-        if (e.deltaY > 10 && !isAtBottom) return
-        if (e.deltaY < -10 && !isAtTop) return
-      }
-
-      // Switching section -> prevent default wheel loop
-      e.preventDefault()
-
-      if (isScrollingRef.current) return
-
-      const currentIndex = sections.indexOf(activeSection)
-      let nextIndex = currentIndex
-
-      if (e.deltaY > 10) {
-        nextIndex = Math.min(currentIndex + 1, sections.length - 1)
-      } else if (e.deltaY < -10) {
-        nextIndex = Math.max(currentIndex - 1, 0)
-      }
-
-      if (nextIndex !== currentIndex) {
-        isScrollingRef.current = true
-        setActiveSection(sections[nextIndex])
-        setTimeout(() => {
-          isScrollingRef.current = false
-        }, 850)
-      }
+    const observerOptions = {
+      root: null,
+      rootMargin: '-30% 0px -65% 0px',
+      threshold: 0
     }
 
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartYRef.current = e.touches[0].clientY
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id as Section)
+        }
+      })
     }
 
-    const handleTouchEnd = (e: TouchEvent) => {
-      const isDesktop = window.innerWidth >= 1024
-      let scrollEl: HTMLElement | null = null
-
-      if (isDesktop) {
-        if (activeSection === 'formations') {
-          scrollEl = document.getElementById('scroll-content')
-        } else if (activeSection === 'about') {
-          scrollEl = document.getElementById('about-scroll-content')
-        }
-      } else {
-        scrollEl = document.getElementById('root-container')
-      }
-
-      let isScrollable = false
-      let isAtTop = true
-      let isAtBottom = true
-
-      if (scrollEl) {
-        isScrollable = scrollEl.scrollHeight > scrollEl.clientHeight
-        if (isScrollable) {
-          isAtTop = scrollEl.scrollTop <= 0
-          isAtBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 5
-        }
-      }
-
-      const touchEndY = e.changedTouches[0].clientY
-      const diffY = touchStartYRef.current - touchEndY
-
-      // Tap click or minor swipe -> return early to let native button taps work perfectly!
-      if (Math.abs(diffY) <= 50) return
-
-      // If container is scrollable and not at boundary, let natural swipe work
-      if (isScrollable) {
-        if (diffY > 50 && !isAtBottom) return
-        if (diffY < -50 && !isAtTop) return
-      }
-
-      if (isScrollingRef.current) return
-
-      const currentIndex = sections.indexOf(activeSection)
-      let nextIndex = currentIndex
-
-      if (diffY > 50) {
-        nextIndex = Math.min(currentIndex + 1, sections.length - 1)
-      } else if (diffY < -50) {
-        nextIndex = Math.max(currentIndex - 1, 0)
-      }
-
-      if (nextIndex !== currentIndex) {
-        // Prevent default touch scroll swipe only when transitioning sections
-        e.preventDefault()
-        isScrollingRef.current = true
-        setActiveSection(sections[nextIndex])
-        setTimeout(() => {
-          isScrollingRef.current = false
-        }, 850)
-      }
-    }
-
-    window.addEventListener('wheel', handleWheel, { passive: false })
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-    window.addEventListener('touchend', handleTouchEnd, { passive: false })
+    const observer = new IntersectionObserver(observerCallback, observerOptions)
+    const sectionIds = ['home', 'formations', 'about', 'contact']
+    
+    const timer = setTimeout(() => {
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id)
+        if (el) observer.observe(el)
+      })
+    }, 500)
 
     return () => {
-      window.removeEventListener('wheel', handleWheel)
-      window.removeEventListener('touchstart', handleTouchStart)
-      window.removeEventListener('touchend', handleTouchEnd)
+      clearTimeout(timer)
+      observer.disconnect()
     }
-  }, [activeSection, currentPath])
+  }, [currentPath])
 
-  // Get current translations
+  // Scroll Reveal Observer: Triggers fade-in-up animations when elements enter viewport
+  useEffect(() => {
+    if (currentPath === '/admin') return
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed')
+            revealObserver.unobserve(entry.target)
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: '0px 0px -12% 0px',
+        threshold: 0.05
+      }
+    )
+
+    const timer = setTimeout(() => {
+      const elements = document.querySelectorAll('.scroll-reveal')
+      elements.forEach((el) => revealObserver.observe(el))
+    }, 600)
+
+    return () => {
+      clearTimeout(timer)
+      revealObserver.disconnect()
+    }
+  }, [currentPath])
+
+  // Smooth Scroll to Section function
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id)
+    if (element) {
+      const headerOffset = 100
+      const elementPosition = element.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+    }
+    setMenuOpen(false)
+  }
+
+  // Contact Form submit handler
+  const handleContactFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setContactSending(true)
+    setContactSuccess(false)
+
+    setTimeout(() => {
+      setContactSending(false)
+      setContactSuccess(true)
+      setContactName('')
+      setContactEmail('')
+      setContactSubject('')
+      setContactMessage('')
+
+      setTimeout(() => setContactSuccess(false), 5000)
+    }, 1500)
+  }
+
   const t = locales[lang]
 
-  // Navbar tabs
   const navTabs: { id: Section; label: string; icon: React.ReactNode }[] = [
     {
       id: 'home',
@@ -277,7 +286,7 @@ function App() {
 
   return (
     <>
-      {/* Advanced Full Screen Loading Animation (Purple Twilight themed) */}
+      {/* Advanced Full Screen Loading Animation */}
       <div
         className={`fixed inset-0 z-[100] bg-[#FAF8F4] flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
           loading ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
@@ -318,35 +327,37 @@ function App() {
         /* RENDER STUNNING ADMIN INTERFACE */
         <AdminView navigateTo={navigateTo} lang={lang} setLang={setLang} />
       ) : (
-        /* MAIN WEBSITE CONTAINER */
+        /* MAIN LANDING PAGE WEBSITE CONTAINER */
         <div
           id="root-container"
           dir={lang === 'ar' ? 'rtl' : 'ltr'}
-          className="min-h-screen bg-[#FAF8F4] text-slate-800 font-sans px-4 sm:px-6 py-4 sm:py-6 flex flex-col transition-all duration-300 relative overflow-y-auto lg:overflow-hidden overflow-x-hidden scrollbar-none"
+          className="min-h-screen bg-[#FAF8F4] text-slate-800 font-sans px-4 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-3 flex flex-col transition-all duration-300 relative overflow-y-auto overflow-x-hidden scroll-smooth"
         >
-          {/* Slow-moving animated background grid (Subtle, thin Ocean Twilight lines) */}
-          <div
-            className="absolute inset-0 z-0 pointer-events-none opacity-80"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(65, 74, 190, 0.08) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(65, 74, 190, 0.08) 1px, transparent 1px)
-              `,
-              backgroundSize: '45px 45px',
-              animation: 'moveGrid 28s linear infinite'
-            }}
-          />
+          {/* Background visuals wrapper - clipped to prevent height/width stretching from absolute glows */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            {/* Slow-moving animated background grid */}
+            <div
+              className="absolute inset-0 opacity-80"
+              style={{
+                backgroundImage: `
+                  linear-gradient(to right, rgba(65, 74, 190, 0.08) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(65, 74, 190, 0.08) 1px, transparent 1px)
+                `,
+                backgroundSize: '45px 45px',
+                animation: 'moveGrid 28s linear infinite'
+              }}
+            />
+            {/* Glow circles */}
+            <div className="absolute top-[-10%] left-[-15%] w-[60vw] h-[60vw] max-w-[600px] rounded-full bg-amber-100/30 blur-[140px]" />
+            <div className="absolute bottom-[-10%] right-[-15%] w-[60vw] h-[60vw] max-w-[600px] rounded-full bg-ocean-twilight/5 blur-[150px]" />
+          </div>
 
-          {/* Background Radial Glows */}
-          <div className="absolute top-[-10%] left-[-15%] w-[60vw] h-[60vw] max-w-[600px] rounded-full bg-amber-100/30 blur-[140px] pointer-events-none z-0" />
-          <div className="absolute bottom-[-10%] right-[-15%] w-[60vw] h-[60vw] max-w-[600px] rounded-full bg-ocean-twilight/5 blur-[150px] pointer-events-none z-0" />
-
-          {/* Floating Navbar */}
-          <header className="w-full max-w-5xl mx-auto z-50 mb-4 sm:mb-6 px-1 sm:px-0 relative">
+          {/* Floating Sticky Navbar */}
+          <header className="sticky top-0 w-full max-w-5xl mx-auto z-50 mb-8 sm:mb-12 px-1 sm:px-0">
             <div className="bg-white/80 backdrop-blur-lg border border-slate-200/50 shadow-md rounded-full px-4 sm:px-6 py-3 flex items-center justify-between gap-4 animate-[fadeIn_0.5s_ease-out] relative">
               
               {/* Logo Section */}
-              <div className="flex items-center gap-2 select-none">
+              <div onClick={() => scrollToSection('home')} className="flex items-center gap-2 select-none cursor-pointer">
                 <img src="/nobgLogo.png" alt="InnoTwist Logo" className="h-8 w-auto object-contain" />
                 <span className="text-lg font-extrabold tracking-tight text-slate-900">InnoTwist</span>
               </div>
@@ -358,8 +369,8 @@ function App() {
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveSection(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${
+                      onClick={() => scrollToSection(tab.id)}
+                      className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-full transition-all duration-200 cursor-pointer ${
                         isActive
                           ? 'bg-ocean-twilight/15 text-ocean-twilight shadow-sm'
                           : 'text-slate-500 hover:text-ocean-twilight hover:bg-ocean-twilight/10'
@@ -378,7 +389,7 @@ function App() {
                   <button
                     key={l}
                     onClick={() => setLang(l)}
-                    className={`px-3 py-1.5 text-[10px] font-black rounded-full transition-all duration-200 ${
+                    className={`px-3 py-1.5 text-[10px] font-black rounded-full transition-all duration-200 cursor-pointer ${
                       lang === l ? 'bg-slate-950 text-white shadow-sm' : 'text-slate-400 hover:text-slate-800'
                     }`}
                   >
@@ -390,7 +401,7 @@ function App() {
               {/* Hamburger Button */}
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="lg:hidden p-2 rounded-full hover:bg-slate-900/5 text-slate-700 transition-colors"
+                className="lg:hidden p-2 rounded-full hover:bg-slate-900/5 text-slate-700 transition-colors cursor-pointer"
                 aria-label="Toggle navigation menu"
               >
                 {menuOpen ? (
@@ -413,11 +424,8 @@ function App() {
                       return (
                         <button
                           key={tab.id}
-                          onClick={() => {
-                            setActiveSection(tab.id)
-                            setMenuOpen(false)
-                          }}
-                          className={`flex items-center gap-3.5 px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
+                          onClick={() => scrollToSection(tab.id)}
+                          className={`flex items-center gap-3.5 px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 text-left ${
                             isActive
                               ? 'bg-ocean-twilight/15 text-ocean-twilight shadow-sm'
                               : 'text-slate-500 hover:text-ocean-twilight hover:bg-ocean-twilight/10'
@@ -451,364 +459,449 @@ function App() {
             </div>
           </header>
 
-          {/* Section Content Area - Cleanly clips scrolling text boundaries on desktop */}
-          <main className="flex-1 max-w-5xl w-full mx-auto flex items-center justify-center py-2 sm:py-6 z-20 mt-2 lg:overflow-hidden">
+          {/* Section Content Area */}
+          <main className="flex-1 max-w-5xl w-full mx-auto flex flex-col gap-24 sm:gap-32 z-20">
             
-            {activeSection === 'home' ? (
-              <div className="w-full flex flex-col items-center">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-center w-full text-center lg:text-start">
-                  
-                  {/* Left Column: Hero Text & WhatsApp Button */}
-                  <div className="lg:col-span-7 space-y-8 animate-[fadeIn_0.8s_ease-out] text-center lg:text-start px-4 sm:px-8 lg:px-0">
-                    {/* Subtle Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ocean-twilight/10 border border-ocean-twilight/20 text-xs font-semibold text-ocean-twilight mx-auto lg:mx-0">
-                      <span className="flex h-2.5 w-2.5 rounded-full bg-ocean-twilight animate-pulse" />
-                      InnoTwist
-                    </div>
+            {/* 1. HOME / HERO SECTION */}
+            <section id="home" className="w-full flex flex-col items-center py-4 scroll-mt-24">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-center w-full text-center lg:text-start">
+                
+                {/* Left Column: Hero Text */}
+                <div className="lg:col-span-7 space-y-8 animate-[fadeIn_0.8s_ease-out] text-center lg:text-start px-4 sm:px-8 lg:px-0">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ocean-twilight/10 border border-ocean-twilight/20 text-xs font-semibold text-ocean-twilight mx-auto lg:mx-0 animate-pulse">
+                    <span className="flex h-2.5 w-2.5 rounded-full bg-ocean-twilight" />
+                    InnoTwist
+                  </div>
 
-                    {/* Primary Heading */}
-                    <h1 className="text-[22px] sm:text-[32px] md:text-[42px] lg:text-[50px] font-black text-slate-900 tracking-tight leading-[1.2] text-center lg:text-start">
-                      <span className="block sm:whitespace-nowrap">{t.heroTitleLine1}</span>
-                      <span className="text-slate-900 block mt-2 sm:whitespace-nowrap">
-                        {t.heroTitleLine2Prefix}
-                        <span className="relative inline-block text-ocean-twilight font-hand font-normal pb-1.5 pl-2 pr-2 select-text text-[28px] sm:text-[38px] md:text-[48px] lg:text-[58px]">
-                          {t.heroTitleLine2Highlight}
-                          <svg
-                            className="absolute bottom-0 start-0 w-full h-2.5 stroke-ocean-twilight"
-                            viewBox="0 0 100 10"
-                            preserveAspectRatio="none"
-                            fill="none"
-                          >
-                            <path
-                              d="M3,5 C35,2 65,8 97,4"
-                              strokeWidth="3.2"
-                              strokeLinecap="round"
-                              style={{
-                                strokeDasharray: 120,
-                                strokeDashoffset: 120,
-                                animation: 'drawOutline 2.2s ease-in-out 0.5s forwards'
-                              }}
-                            />
-                          </svg>
-                        </span>
+                  <h1 className="text-[22px] sm:text-[32px] md:text-[42px] lg:text-[50px] font-black text-slate-900 tracking-tight leading-[1.2]">
+                    <span className="block sm:whitespace-nowrap">{t.heroTitleLine1}</span>
+                    <span className="text-slate-900 block mt-2 sm:whitespace-nowrap">
+                      {t.heroTitleLine2Prefix}
+                      <span className="relative inline-block text-ocean-twilight font-hand font-normal pb-1.5 pl-2 pr-2 select-text text-[28px] sm:text-[38px] md:text-[48px] lg:text-[58px]">
+                        {t.heroTitleLine2Highlight}
+                        <svg
+                          className="absolute bottom-0 start-0 w-full h-2.5 stroke-ocean-twilight"
+                          viewBox="0 0 100 10"
+                          preserveAspectRatio="none"
+                          fill="none"
+                        >
+                          <path
+                            d="M3,5 C35,2 65,8 97,4"
+                            strokeWidth="3.2"
+                            strokeLinecap="round"
+                            style={{
+                              strokeDasharray: 120,
+                              strokeDashoffset: 120,
+                              animation: 'drawOutline 2.2s ease-in-out 0.5s forwards'
+                            }}
+                          />
+                        </svg>
                       </span>
-                    </h1>
+                    </span>
+                  </h1>
 
-                    {/* Localized Subtitles */}
-                    <div className="space-y-3 max-w-lg mx-auto lg:mx-0 text-center lg:text-start">
-                      <p className="text-base sm:text-lg lg:text-xl font-bold text-slate-700 leading-relaxed select-text">
-                        {t.heroSubtitle1}
-                      </p>
-                      <p className="text-sm sm:text-base lg:text-lg text-slate-500 leading-relaxed select-text">
-                        {t.heroSubtitle2}
-                      </p>
-                    </div>
-
-                    {/* WhatsApp Book Now CTA */}
-                    <div className="pt-2 flex justify-center lg:justify-start">
-                      <a
-                        href="https://wa.me/123456789"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-3.5 px-6 py-3 sm:px-8 sm:py-4 bg-[#25D366] hover:bg-[#22c35e] text-white rounded-full font-extrabold shadow-xl shadow-[#25D366]/25 hover:shadow-[#25D366]/35 transition-all duration-300 transform active:scale-95 text-xs sm:text-sm"
-                      >
-                        <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5 fill-current" viewBox="0 0 24 24">
-                          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.451L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.115-2.908-6.995-1.878-1.88-4.357-2.912-6.997-2.914-5.443 0-9.868 4.42-9.873 9.864-.002 1.848.495 3.653 1.438 5.253l-.992 3.626 3.743-.982zM17.487 14.51c-.294-.147-1.736-.857-2.006-.955-.27-.098-.467-.147-.662.147-.196.294-.759.955-.931 1.15-.172.195-.344.22-.638.073-.294-.147-1.243-.458-2.37-1.462-.877-.783-1.47-1.75-1.642-2.045-.172-.295-.018-.454.13-.601.133-.13.294-.343.44-.515.15-.171.2-.294.3-.49.1-.197.05-.367-.025-.515-.074-.147-.662-1.594-.908-2.183-.24-.578-.48-.5-.662-.51-.17-.008-.367-.01-.563-.01-.196 0-.515.073-.784.367-.27.294-1.03 1.007-1.03 2.455 0 1.448 1.054 2.846 1.202 3.04.148.196 2.074 3.168 5.025 4.444.702.304 1.25.485 1.677.62.705.224 1.347.193 1.854.117.565-.084 1.736-.71 1.98-.1.244-.707.244-1.298 0-.147-.074-.097-.27-.147-.563-.294z"/>
-                        </svg>
-                        <span>{t.whatsappCTA}</span>
-                      </a>
-                    </div>
+                  <div className="space-y-3 max-w-lg mx-auto lg:mx-0">
+                    <p className="text-base sm:text-lg lg:text-xl font-bold text-slate-700 leading-relaxed select-text">
+                      {t.heroSubtitle1}
+                    </p>
+                    <p className="text-sm sm:text-base lg:text-lg text-slate-500 leading-relaxed select-text">
+                      {t.heroSubtitle2}
+                    </p>
                   </div>
 
-                  {/* Right Column: Lottie Animation */}
-                  <div className="lg:col-span-5 flex justify-center items-center animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-                    <div className="relative w-full max-w-[450px] aspect-square flex items-center justify-center">
-                      <Lottie animationData={onlineLearningAnimation} loop={true} style={{ width: '100%', height: '100%' }} />
-                    </div>
+                  <div className="pt-2 flex justify-center lg:justify-start">
+                    <a
+                      href="https://wa.me/123456789"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3.5 px-6 py-3 sm:px-8 sm:py-4 bg-[#25D366] hover:bg-[#22c35e] text-white rounded-full font-extrabold shadow-xl shadow-[#25D366]/25 hover:shadow-[#25D366]/35 transition-all duration-300 transform active:scale-95 text-xs sm:text-sm"
+                    >
+                      <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.451L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.115-2.908-6.995-1.878-1.88-4.357-2.912-6.997-2.914-5.443 0-9.868 4.42-9.873 9.864-.002 1.848.495 3.653 1.438 5.253l-.992 3.626 3.743-.982zM17.487 14.51c-.294-.147-1.736-.857-2.006-.955-.27-.098-.467-.147-.662.147-.196.294-.759.955-.931 1.15-.172.195-.344.22-.638.073-.294-.147-1.243-.458-2.37-1.462-.877-.783-1.47-1.75-1.642-2.045-.172-.295-.018-.454.13-.601.133-.13.294-.343.44-.515.15-.171.2-.294.3-.49.1-.197.05-.367-.025-.515-.074-.147-.662-1.594-.908-2.183-.24-.578-.48-.5-.662-.51-.17-.008-.367-.01-.563-.01-.196 0-.515.073-.784.367-.27.294-1.03 1.007-1.03 2.455 0 1.448 1.054 2.846 1.202 3.04.148.196 2.074 3.168 5.025 4.444.702.304 1.25.485 1.677.62.705.224 1.347.193 1.854.117.565-.084 1.736-.71 1.98-.1.244-.707.244-1.298 0-.147-.074-.097-.27-.147-.563-.294z"/>
+                      </svg>
+                      <span>{t.whatsappCTA}</span>
+                    </a>
                   </div>
-
                 </div>
 
-                {/* Centered Scroll Indicator */}
-                <div className="mt-12 sm:mt-16 w-10 h-14 flex items-center justify-center opacity-85 hover:opacity-100 transition-opacity duration-300 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
-                  <Lottie animationData={mouseScrollAnimation} loop={true} style={{ width: '100%', height: '100%' }} />
+                {/* Right Column: Hero Animation */}
+                <div className="lg:col-span-5 flex justify-center items-center animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+                  <div className="relative w-full max-w-[450px] aspect-square flex items-center justify-center">
+                    <Lottie animationData={onlineLearningAnimation} loop={true} style={{ width: '100%', height: '100%' }} />
+                  </div>
                 </div>
+
               </div>
-            ) : activeSection === 'formations' ? (
-              /* FORMATIONS SECTION (Nos Formations Accélérées) */
-              <div id="scroll-content" className="w-full max-h-[calc(100vh-170px)] overflow-y-auto flex flex-col items-center py-4 sm:py-8 scrollbar-none select-text">
-                {/* Header text container */}
-                <div className="text-center space-y-4 max-w-2xl px-4 sm:px-8">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ocean-twilight/10 border border-ocean-twilight/20 text-xs font-semibold text-ocean-twilight mx-auto">
-                    <span className="flex h-2.5 w-2.5 rounded-full bg-ocean-twilight animate-pulse" />
-                    {t.formationsBadge}
+
+              {/* Centered Scroll Indicator */}
+              <div onClick={() => scrollToSection('formations')} className="mt-12 sm:mt-16 w-10 h-14 flex items-center justify-center opacity-85 hover:opacity-100 transition-opacity duration-300 cursor-pointer animate-[fadeIn_0.8s_ease-out_0.4s_both]">
+                <Lottie animationData={mouseScrollAnimation} loop={true} style={{ width: '100%', height: '100%' }} />
+              </div>
+            </section>
+
+            {/* 2. FORMATIONS SECTION */}
+            <section id="formations" className="w-full flex flex-col items-center py-4 scroll-mt-24 scroll-reveal">
+              
+              {/* Header text container */}
+              <div className="text-center space-y-4 max-w-2xl px-4 sm:px-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ocean-twilight/10 border border-ocean-twilight/20 text-xs font-semibold text-ocean-twilight mx-auto">
+                  <span className="flex h-2.5 w-2.5 rounded-full bg-ocean-twilight animate-pulse" />
+                  {t.formationsBadge}
+                </div>
+                <h2 className="text-3xl sm:text-4xl md:text-[42px] font-black text-slate-900 tracking-tight leading-[1.2]">
+                  {t.formationsTitle}
+                </h2>
+                <p className="text-base sm:text-lg text-slate-500 leading-relaxed font-sans">
+                  {t.formationsSubtitle}
+                </p>
+              </div>
+
+              {/* Glassmorphic & Glowing Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full mt-12 max-w-5xl px-4 sm:px-6">
+                
+                {/* 1. Web Development */}
+                <div
+                  onClick={() => setSelectedCourse('web')}
+                  className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-6 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer"
+                >
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-all duration-300 group-hover:scale-110 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.webDevTitle}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">{t.webDevDesc}</p>
                   </div>
-                  <h2 className="text-3xl sm:text-4xl md:text-[42px] font-black text-slate-900 tracking-tight leading-[1.2]">
-                    {t.formationsTitle}
-                  </h2>
-                  <p className="text-base sm:text-lg text-slate-500 leading-relaxed font-sans">
-                    {t.formationsSubtitle}
-                  </p>
+                  <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span>{lang === 'fr' ? 'Détails du programme' : lang === 'en' ? 'Syllabus details' : 'تفاصيل البرنامج'}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
 
-                {/* Creative Categories Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full mt-12 max-w-5xl px-4 sm:px-6">
+                {/* 2. Mobile App Development */}
+                <div
+                  onClick={() => setSelectedCourse('mobile')}
+                  className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-6 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer"
+                >
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-all duration-300 group-hover:scale-110 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.appDevTitle}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">{t.appDevDesc}</p>
+                  </div>
+                  <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span>{lang === 'fr' ? 'Détails du programme' : lang === 'en' ? 'Syllabus details' : 'تفاصيل البرنامج'}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* 3. Digital Marketing */}
+                <div
+                  onClick={() => setSelectedCourse('marketing')}
+                  className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-6 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer"
+                >
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-all duration-300 group-hover:scale-110 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.marketingTitle}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">{t.marketingDesc}</p>
+                  </div>
+                  <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span>{lang === 'fr' ? 'Détails du programme' : lang === 'en' ? 'Syllabus details' : 'تفاصيل البرنامج'}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* 4. Business Development */}
+                <div
+                  onClick={() => setSelectedCourse('business')}
+                  className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-6 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer"
+                >
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-all duration-300 group-hover:scale-110 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.businessTitle}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">{t.businessDesc}</p>
+                  </div>
+                  <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span>{lang === 'fr' ? 'Détails du programme' : lang === 'en' ? 'Syllabus details' : 'تفاصيل البرنامج'}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* 5. IoT & Internet of Things */}
+                <div
+                  onClick={() => setSelectedCourse('iot')}
+                  className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-6 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer"
+                >
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-all duration-300 group-hover:scale-110 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.iotTitle}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">{t.iotDesc}</p>
+                  </div>
+                  <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span>{lang === 'fr' ? 'Détails du programme' : lang === 'en' ? 'Syllabus details' : 'تفاصيل البرنامج'}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* 6. Languages & Communication */}
+                <div
+                  onClick={() => setSelectedCourse('languages')}
+                  className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-6 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer"
+                >
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-all duration-300 group-hover:scale-110 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5c-.03 1.054-.153 2.097-.366 3.109m0 0A12.015 12.015 0 018 12.83" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.languagesTitle}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">{t.languagesDesc}</p>
+                  </div>
+                  <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span>{lang === 'fr' ? 'Détails du programme' : lang === 'en' ? 'Syllabus details' : 'تفاصيل البرنامج'}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* 7. Robotics & Kids Space (Featured layout) */}
+                <div
+                  onClick={() => setSelectedCourse('robotics')}
+                  className="group bg-gradient-to-br from-white/70 to-amber-50/15 backdrop-blur-md border border-slate-200/50 rounded-3xl p-6 md:col-span-2 lg:col-span-3 shadow-sm hover:bg-white/90 hover:border-amber-400/40 hover:shadow-[0_20px_40px_rgba(245,158,11,0.15)] transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col lg:flex-row justify-between items-stretch gap-6 cursor-pointer"
+                >
                   
-                  {/* 1. Web Development */}
-                  <div className="group bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
+                  {/* Left Half: Robotics General */}
+                  <div className="flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-transform duration-300 group-hover:scale-110">
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.webDevTitle}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{t.webDevDesc}</p>
-                    </div>
-                    <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span>{t.whatsappCTA}</span>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* 2. Mobile App Development */}
-                  <div className="group bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
-                    <div>
-                      <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-transform duration-300 group-hover:scale-110">
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.appDevTitle}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{t.appDevDesc}</p>
-                    </div>
-                    <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span>{t.whatsappCTA}</span>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* 3. Digital Marketing */}
-                  <div className="group bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
-                    <div>
-                      <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-transform duration-300 group-hover:scale-110">
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.marketingTitle}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{t.marketingDesc}</p>
-                    </div>
-                    <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span>{t.whatsappCTA}</span>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* 4. Business Development */}
-                  <div className="group bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
-                    <div>
-                      <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-transform duration-300 group-hover:scale-110">
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.businessTitle}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{t.businessDesc}</p>
-                    </div>
-                    <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span>{t.whatsappCTA}</span>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* 5. IoT & Internet of Things */}
-                  <div className="group bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
-                    <div>
-                      <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-transform duration-300 group-hover:scale-110">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-100/40 flex items-center justify-center text-amber-600 mb-5 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-100/60 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]">
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.iotTitle}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{t.iotDesc}</p>
+                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.roboticsTitle}</h3>
+                      <p className="text-sm text-slate-500 leading-relaxed max-w-lg">{t.roboticsDesc}</p>
                     </div>
-                    <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span>{t.whatsappCTA}</span>
+                    <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-amber-600">
+                      <span>{lang === 'fr' ? 'Détails du programme' : lang === 'en' ? 'Syllabus details' : 'تفاصيل البرنامج'}</span>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
                   </div>
 
-                  {/* 6. Languages & Communication */}
-                  <div className="group bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
-                    <div>
-                      <div className="w-12 h-12 rounded-2xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-5 transition-transform duration-300 group-hover:scale-110">
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5c-.03 1.054-.153 2.097-.366 3.109m0 0A12.015 12.015 0 018 12.83" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.languagesTitle}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{t.languagesDesc}</p>
-                    </div>
-                    <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-ocean-twilight opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span>{t.whatsappCTA}</span>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  {/* Right Half: Playful Kids Space Environment */}
+                  <div className="flex-1 rounded-2xl bg-gradient-to-tr from-amber-500/10 via-amber-400/5 to-transparent border border-amber-200/50 p-5 relative overflow-hidden flex flex-col justify-center min-h-[140px]">
+                    <div className="absolute top-2 right-2 text-amber-400 opacity-60 animate-pulse">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.857 1.4-8.168L.132 9.21l8.2-1.192L12 .587z" />
                       </svg>
                     </div>
-                  </div>
-
-                  {/* 7. Robotics & Kids Space (Featured layout) */}
-                  <div className="group bg-gradient-to-br from-white to-amber-50/15 border border-slate-200/60 rounded-3xl p-6 md:col-span-2 lg:col-span-3 shadow-sm hover:shadow-md hover:border-amber-400/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col lg:flex-row justify-between items-stretch gap-6">
-                    
-                    {/* Left Half: Robotics General */}
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <div className="w-12 h-12 rounded-2xl bg-amber-100/40 flex items-center justify-center text-amber-600 mb-5 transition-transform duration-300 group-hover:scale-110">
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        <h3 className="text-lg font-extrabold text-slate-900 mb-2">{t.roboticsTitle}</h3>
-                        <p className="text-sm text-slate-500 leading-relaxed max-w-lg">{t.roboticsDesc}</p>
-                      </div>
-                      <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-amber-600">
-                        <span>{t.whatsappCTA}</span>
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
+                    <div className="relative z-10 space-y-2">
+                      <span className="inline-flex px-2.5 py-0.5 rounded-full bg-amber-500/20 text-[10px] font-black text-amber-700 uppercase tracking-widest">
+                        {t.kidsBadge}
+                      </span>
+                      <h4 className="text-base font-extrabold text-slate-900">
+                        {lang === 'fr' ? "Robotique & Arduino Junior" : lang === 'en' ? "Robotics & Arduino Junior" : "برمجة الروبوتات للصغار"}
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed max-w-sm">
+                        {lang === 'fr' 
+                          ? "Un espace d'apprentissage interactif conçu spécialement pour initier les plus jeunes à l'électronique de façon ludique !"
+                          : lang === 'en'
+                          ? "An interactive learning environment tailored specifically to introduce kids to electronics in a fun way!"
+                          : "مسار تعليمي تفاعلي مصمم خصيصاً لتعريف الصغار بعالم الإلكترونيات بطرق ممتعة ومبسطة!"}
+                      </p>
                     </div>
-
-                    {/* Right Half: Playful Kids Space Environment */}
-                    <div className="flex-1 rounded-2xl bg-gradient-to-tr from-amber-500/10 via-amber-400/5 to-transparent border border-amber-200/50 p-5 relative overflow-hidden flex flex-col justify-center min-h-[140px]">
-                      <div className="absolute top-2 right-2 text-amber-400 opacity-60 animate-pulse">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.857 1.4-8.168L.132 9.21l8.2-1.192L12 .587z" />
-                        </svg>
-                      </div>
-                      <div className="relative z-10 space-y-2">
-                        <span className="inline-flex px-2.5 py-0.5 rounded-full bg-amber-500/20 text-[10px] font-black text-amber-700 uppercase tracking-widest">
-                          {t.kidsBadge}
-                        </span>
-                        <h4 className="text-base font-extrabold text-slate-900">
-                          {lang === 'fr' ? "Robotique & Arduino Junior" : lang === 'en' ? "Robotics & Arduino Junior" : "برمجة الروبوتات للصغار"}
-                        </h4>
-                        <p className="text-xs text-slate-600 leading-relaxed max-w-sm">
-                          {lang === 'fr' 
-                            ? "Un espace d'apprentissage interactif conçu spécialement pour initier les plus jeunes à l'électronique de façon ludique !"
-                            : lang === 'en'
-                            ? "An interactive learning environment tailored specifically to introduce kids to electronics in a fun way!"
-                            : "مسار تعليمي تفاعلي مصمم خصيصاً لتعريف الصغار بعالم الإلكترونيات بطرق ممتعة ومبسطة!"}
-                        </p>
-                      </div>
-                    </div>
-
                   </div>
 
                 </div>
 
-                {/* Bottom spacer to provide visual breathing room and indicator of reaching the end */}
-                <div className="h-16 w-full shrink-0" />
               </div>
-            ) : activeSection === 'about' ? (
-              /* ABOUT SECTION */
-              <div id="about-scroll-content" className="w-full max-h-[calc(100vh-170px)] lg:overflow-y-auto scrollbar-none grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center py-4 sm:py-8 animate-[fadeIn_0.6s_ease-out] px-4 sm:px-8 lg:px-0 select-text">
+            </section>
+
+            {/* 3. ABOUT SECTION */}
+            <section id="about" className="w-full flex flex-col items-center py-4 scroll-mt-24 scroll-reveal">
+              <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center px-4 sm:px-8 lg:px-0 select-text">
                 
-                {/* Left Column: Premium Logo Showcase with breathing glows */}
+                {/* Left Column: Premium Logo Showcase */}
                 <div className="lg:col-span-5 flex justify-center items-center">
                   <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square rounded-[40px] bg-white border border-slate-200/60 shadow-md flex items-center justify-center group overflow-hidden">
-                    {/* Subtle purple background glow */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-ocean-twilight/10 via-transparent to-ocean-twilight/5 z-0" />
                     
-                    {/* Floating Logo with subtle hover lift and scale */}
                     <img
                       src="/nobgLogo.png"
                       alt="InnoTwist Logo"
                       className="h-28 sm:h-36 w-auto object-contain z-10 transition-transform duration-500 group-hover:scale-105 drop-shadow-[0_0_15px_rgba(65,74,190,0.25)]"
                     />
                     
-                    {/* Wireframe border shines */}
                     <div className="absolute inset-0 rounded-[40px] border border-transparent group-hover:border-ocean-twilight/20 transition-colors duration-500 pointer-events-none" />
                   </div>
                 </div>
 
-                {/* Right Column: Qui Sommes-nous Badge & Structured Paragraphs */}
+                {/* Right Column: Qui Sommes-nous Badge */}
                 <div className="lg:col-span-7 space-y-6 text-center lg:text-start">
-                  {/* Badge */}
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ocean-twilight/10 border border-ocean-twilight/20 text-xs font-semibold text-ocean-twilight mx-auto lg:mx-0">
                     <span className="flex h-2.5 w-2.5 rounded-full bg-ocean-twilight animate-pulse" />
                     {t.aboutBadge}
                   </div>
 
-                  {/* Title */}
                   <h2 className="text-3xl sm:text-4xl md:text-[42px] font-black text-slate-900 tracking-tight leading-[1.2]">
                     {t.aboutTitle}
                   </h2>
 
-                  {/* Structured readable text blocks */}
                   <div className="space-y-4 max-w-xl mx-auto lg:mx-0 text-sm sm:text-base text-slate-600 leading-relaxed font-sans">
-                    <p>
-                      {t.aboutParagraph1}
-                    </p>
-                    <p>
-                      {t.aboutParagraph2}
-                    </p>
-                    <p>
-                      {t.aboutParagraph3}
-                    </p>
+                    <p>{t.aboutParagraph1}</p>
+                    <p>{t.aboutParagraph2}</p>
+                    <p>{t.aboutParagraph3}</p>
                   </div>
                 </div>
 
-                {/* Bottom spacer to provide visual breathing room and indicator of reaching the end on mobile/tablet */}
-                <div className="h-16 w-full shrink-0 lg:hidden" />
               </div>
-            ) : (
-              /* CONTACT SECTION */
-              <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center py-4 sm:py-8 animate-[fadeIn_0.6s_ease-out] px-4 sm:px-8 lg:px-0 select-text">
+            </section>
+
+            {/* 4. CONTACT SECTION */}
+            <section id="contact" className="w-full flex flex-col items-center py-4 scroll-mt-24 scroll-reveal">
+              
+              {/* Header text container */}
+              <div className="text-center space-y-4 max-w-2xl px-4 sm:px-8 mx-auto mb-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ocean-twilight/10 border border-ocean-twilight/20 text-xs font-semibold text-ocean-twilight mx-auto">
+                  <span className="flex h-2.5 w-2.5 rounded-full bg-ocean-twilight animate-pulse" />
+                  {t.contactBadge}
+                </div>
+                <h2 className="text-3xl sm:text-4xl md:text-[42px] font-black text-slate-900 tracking-tight leading-[1.2]">
+                  {t.contactTitle}
+                </h2>
+                <p className="text-base sm:text-lg text-slate-500 leading-relaxed font-sans">
+                  {t.contactSubtitle}
+                </p>
+              </div>
+
+              {/* Content grid layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 w-full max-w-5xl px-4 sm:px-6 items-start">
                 
-                {/* Left Column: Heading & Unified portal CTA */}
-                <div className="lg:col-span-6 space-y-8 text-center lg:text-start">
-                  {/* Badge */}
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ocean-twilight/10 border border-ocean-twilight/20 text-xs font-semibold text-ocean-twilight mx-auto lg:mx-0">
-                    <span className="flex h-2.5 w-2.5 rounded-full bg-ocean-twilight animate-pulse" />
-                    {t.contactBadge}
-                  </div>
+                {/* Left Column: Interactive Form */}
+                <div className="lg:col-span-6 w-full">
+                  <form onSubmit={handleContactFormSubmit} className="bg-white border border-slate-200/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+                    
+                    {contactSuccess && (
+                      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm font-semibold text-emerald-700 flex items-center gap-2 animate-[fadeIn_0.2s_ease-out]">
+                        <svg className="w-5 h-5 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>{t.contactFormSuccess}</span>
+                      </div>
+                    )}
 
-                  {/* Title & Subtitle */}
-                  <div className="space-y-4">
-                    <h2 className="text-3xl sm:text-4xl md:text-[42px] font-black text-slate-900 tracking-tight leading-[1.2]">
-                      {t.contactTitle}
-                    </h2>
-                    <p className="text-sm sm:text-base text-slate-500 max-w-lg mx-auto lg:mx-0 leading-relaxed font-sans">
-                      {t.contactSubtitle}
-                    </p>
-                  </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">{t.contactFormName}</label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </span>
+                        <input
+                          type="text"
+                          required
+                          placeholder={lang === 'ar' ? 'محمد علي' : 'Jean Dupont'}
+                          value={contactName}
+                          onChange={(e) => setContactName(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-ocean-twilight focus:ring-1 focus:ring-ocean-twilight text-sm font-sans transition-all duration-200"
+                        />
+                      </div>
+                    </div>
 
-                  {/* Unified portal button */}
-                  <div className="pt-2 flex justify-center lg:justify-start">
-                    <a
-                      href="https://bio.link/innotwistacademy"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-ocean-twilight text-white font-extrabold rounded-full shadow-lg shadow-ocean-twilight/20 hover:shadow-ocean-twilight/35 transition-all duration-300 hover:bg-ocean-twilight/90 transform active:scale-95 text-xs sm:text-sm"
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">{t.contactFormEmail}</label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                        </span>
+                        <input
+                          type="email"
+                          required
+                          placeholder="exemple@email.com"
+                          value={contactEmail}
+                          onChange={(e) => setContactEmail(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-ocean-twilight focus:ring-1 focus:ring-ocean-twilight text-sm font-sans transition-all duration-200"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">{t.contactFormSubject}</label>
+                      <select
+                        required
+                        value={contactSubject}
+                        onChange={(e) => setContactSubject(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:border-ocean-twilight focus:ring-1 focus:ring-ocean-twilight text-sm font-sans transition-all duration-200 cursor-pointer appearance-none"
+                      >
+                        <option value="" disabled>{lang === 'fr' ? 'Choisissez une option' : lang === 'en' ? 'Select an option' : 'اختر أحد الخيارات'}</option>
+                        <option value="Web">{t.webDevTitle}</option>
+                        <option value="Mobile">{t.appDevTitle}</option>
+                        <option value="Marketing">{t.marketingTitle}</option>
+                        <option value="Business">{t.businessTitle}</option>
+                        <option value="IoT">{t.iotTitle}</option>
+                        <option value="Languages">{t.languagesTitle}</option>
+                        <option value="Robotics">{t.roboticsTitle}</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">{t.contactFormMessage}</label>
+                      <textarea
+                        required
+                        rows={4}
+                        placeholder={t.contactFormMessage}
+                        value={contactMessage}
+                        onChange={(e) => setContactMessage(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-ocean-twilight focus:ring-1 focus:ring-ocean-twilight text-sm font-sans transition-all duration-200 resize-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={contactSending}
+                      className="w-full py-3.5 bg-ocean-twilight text-white font-extrabold rounded-xl shadow-lg shadow-ocean-twilight/20 hover:shadow-ocean-twilight/35 transition-all duration-300 transform active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
-                      <span>{t.contactButton}</span>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-                  </div>
+                      {contactSending ? (
+                        <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                      ) : (
+                        <span>{t.contactFormSubmit}</span>
+                      )}
+                    </button>
+                  </form>
                 </div>
 
                 {/* Right Column: Grid of 4 contact channels linking directly to Bio.link */}
@@ -819,9 +912,9 @@ function App() {
                     href="https://bio.link/innotwistacademy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group bg-white border border-slate-200/60 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col justify-between"
+                    className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-5 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-0.5 flex flex-col justify-between"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-4 transition-transform duration-300 group-hover:scale-105">
+                    <div className="w-10 h-10 rounded-xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-4 transition-all duration-300 group-hover:scale-105 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
@@ -837,9 +930,9 @@ function App() {
                     href="https://bio.link/innotwistacademy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group bg-white border border-slate-200/60 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col justify-between"
+                    className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-5 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-0.5 flex flex-col justify-between"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-4 transition-transform duration-300 group-hover:scale-105">
+                    <div className="w-10 h-10 rounded-xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-4 transition-all duration-300 group-hover:scale-105 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
@@ -855,9 +948,9 @@ function App() {
                     href="https://bio.link/innotwistacademy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group bg-white border border-slate-200/60 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-[#25D366]/30 transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col justify-between"
+                    className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-5 shadow-sm hover:bg-white/90 hover:border-[#25D366]/40 hover:shadow-[0_20px_40px_rgba(37,211,102,0.15)] transition-all duration-500 transform hover:-translate-y-0.5 flex flex-col justify-between"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-[#25D366]/10 flex items-center justify-center text-[#25D366] mb-4 transition-transform duration-300 group-hover:scale-105">
+                    <div className="w-10 h-10 rounded-xl bg-[#25D366]/10 flex items-center justify-center text-[#25D366] mb-4 transition-all duration-300 group-hover:scale-105 group-hover:bg-[#25D366]/20 group-hover:shadow-[0_0_15px_rgba(37,211,102,0.3)]">
                       <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.451L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.115-2.908-6.995-1.878-1.88-4.357-2.912-6.997-2.914-5.443 0-9.868 4.42-9.873 9.864-.002 1.848.495 3.653 1.438 5.253l-.992 3.626 3.743-.982zM17.487 14.51c-.294-.147-1.736-.857-2.006-.955-.27-.098-.467-.147-.662.147-.196.294-.759.955-.931 1.15-.172.195-.344.22-.638.073-.294-.147-1.243-.458-2.37-1.462-.877-.783-1.47-1.75-1.642-2.045-.172-.295-.018-.454.13-.601.133-.13.294-.343.44-.515.15-.171.2-.294.3-.49.1-.197.05-.367-.025-.515-.074-.147-.662-1.594-.908-2.183-.24-.578-.48-.5-.662-.51-.17-.008-.367-.01-.563-.01-.196 0-.515.073-.784.367-.27.294-1.03 1.007-1.03 2.455 0 1.448 1.054 2.846 1.202 3.04.148.196 2.074 3.168 5.025 4.444.702.304 1.25.485 1.677.62.705.224 1.347.193 1.854.117.565-.084 1.736-.71 1.98-.1.244-.707.244-1.298 0-.147-.074-.097-.27-.147-.563-.294z"/>
                       </svg>
@@ -873,9 +966,9 @@ function App() {
                     href="https://bio.link/innotwistacademy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group bg-white border border-slate-200/60 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-ocean-twilight/30 transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col justify-between"
+                    className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-5 shadow-sm hover:bg-white/90 hover:border-ocean-twilight/40 hover:shadow-[0_20px_40px_rgba(65,74,190,0.15)] transition-all duration-500 transform hover:-translate-y-0.5 flex flex-col justify-between"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-4 transition-transform duration-300 group-hover:scale-105">
+                    <div className="w-10 h-10 rounded-xl bg-ocean-twilight/10 flex items-center justify-center text-ocean-twilight mb-4 transition-all duration-300 group-hover:scale-105 group-hover:bg-ocean-twilight/20 group-hover:shadow-[0_0_15px_rgba(65,74,190,0.3)]">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                       </svg>
@@ -889,16 +982,114 @@ function App() {
                 </div>
 
               </div>
-            )}
+            </section>
 
           </main>
 
-          {/* Global Footer */}
-          <footer className="w-full max-w-5xl mx-auto border-t border-slate-200/60 pt-6 mt-12 text-xs text-slate-400 select-none text-center z-20 animate-[fadeIn_0.5s_ease-out]">
-            <div>&copy; {new Date().getFullYear()} InnoTwist. {t.copyright}</div>
+          {/* Clean, Rich, Professional Footer */}
+          <footer className="w-full max-w-5xl mx-auto border-t border-slate-200/60 pt-10 mt-20 text-slate-600 select-none z-20 animate-[fadeIn_0.5s_ease-out] space-y-8 pb-0">
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-start px-4 sm:px-0">
+              
+              {/* Column 1: Brand & Logo */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center md:justify-start gap-2.5">
+                  <img src="/nobgLogo.png" alt="InnoTwist Logo" className="h-7 w-auto object-contain" />
+                  <span className="text-base font-extrabold tracking-tight text-slate-900">InnoTwist</span>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed font-sans max-w-xs mx-auto md:mx-0">
+                  {lang === 'fr' 
+                    ? "Centre de formation accélérée pour acquérir les compétences techniques et digitales les plus recherchées du marché."
+                    : lang === 'en'
+                    ? "Accelerated training center to acquire the most in-demand technical and digital skills on the market."
+                    : "مركز تكوين سريع لاكتساب المهارات التقنية والرقمية الأكثر طلباً في سوق العمل."}
+                </p>
+              </div>
+
+              {/* Column 2: Navigation Links */}
+              <div className="space-y-3.5">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">
+                  {lang === 'fr' ? "Navigation" : lang === 'en' ? "Quick Links" : "روابط سريعة"}
+                </h4>
+                <ul className="flex flex-col gap-2.5 text-xs font-bold text-slate-500 font-sans">
+                  {navTabs.map((tab) => (
+                    <li key={tab.id}>
+                      <button
+                        onClick={() => scrollToSection(tab.id)}
+                        className="hover:text-ocean-twilight transition-colors cursor-pointer"
+                      >
+                        {tab.label}
+                      </button>
+                    </li>
+                  ))}
+                  <li>
+                    <button
+                      onClick={() => navigateTo('/admin')}
+                      className="hover:text-ocean-twilight transition-colors cursor-pointer text-slate-400"
+                    >
+                      {t.adminLoginTitle}
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Column 3: Contact & Links Portal */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">
+                  {lang === 'fr' ? "Réseaux & Contacts" : lang === 'en' ? "Networks & Connect" : "وسائل التواصل والاتصال"}
+                </h4>
+                <p className="text-xs text-slate-500 font-sans">
+                  {lang === 'fr' ? "Rejoignez-nous sur nos canaux officiels." : lang === 'en' ? "Join us on our official channels." : "انضم إلينا عبر قنواتنا الرسمية."}
+                </p>
+                
+                {/* Social icons row */}
+                <div className="flex justify-center md:justify-start items-center gap-3">
+                  <a
+                    href="https://bio.link/innotwistacademy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-ocean-twilight/10 border border-slate-200/50 flex items-center justify-center text-slate-500 hover:text-ocean-twilight transition-all"
+                    title="WhatsApp"
+                  >
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.451L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.115-2.908-6.995-1.878-1.88-4.357-2.912-6.997-2.914-5.443 0-9.868 4.42-9.873 9.864-.002 1.848.495 3.653 1.438 5.253l-.992 3.626 3.743-.982zM17.487 14.51c-.294-.147-1.736-.857-2.006-.955-.27-.098-.467-.147-.662.147-.196.294-.759.955-.931 1.15-.172.195-.344.22-.638.073-.294-.147-1.243-.458-2.37-1.462-.877-.783-1.47-1.75-1.642-2.045-.172-.295-.018-.454.13-.601.133-.13.294-.343.44-.515.15-.171.2-.294.3-.49.1-.197.05-.367-.025-.515-.074-.147-.662-1.594-.908-2.183-.24-.578-.48-.5-.662-.51-.17-.008-.367-.01-.563-.01-.196 0-.515.073-.784.367-.27.294-1.03 1.007-1.03 2.455 0 1.448 1.054 2.846 1.202 3.04.148.196 2.074 3.168 5.025 4.444.702.304 1.25.485 1.677.62.705.224 1.347.193 1.854.117.565-.084 1.736-.71 1.98-.1.244-.707.244-1.298 0-.147-.074-.097-.27-.147-.563-.294z"/>
+                    </svg>
+                  </a>
+                  <a
+                    href="https://bio.link/innotwistacademy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-ocean-twilight/10 border border-slate-200/50 flex items-center justify-center text-slate-500 hover:text-ocean-twilight transition-all"
+                    title="Instagram"
+                  >
+                    <svg className="w-4 h-4 text-inherit" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </a>
+                  <a
+                    href="https://bio.link/innotwistacademy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-ocean-twilight/10 border border-slate-200/50 flex items-center justify-center text-slate-500 hover:text-ocean-twilight transition-all"
+                    title="Contact Link Hub"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Copyright Sub-row */}
+            <div className="h-[1px] bg-slate-200/60 my-5" />
+            <div className="text-[10px] text-slate-400 text-center font-sans">
+              &copy; {new Date().getFullYear()} InnoTwist. {t.copyright}
+            </div>
           </footer>
 
-          {/* Embedded CSS keyframe animations for grids, sweeps, and fades */}
+          {/* Embedded CSS keyframe animations */}
           <style>{`
             @keyframes drawOutline {
               to {
@@ -923,6 +1114,34 @@ function App() {
                 transform: translateY(0);
               }
             }
+            
+            /* Scroll Reveal Animations */
+            .scroll-reveal {
+              opacity: 0;
+              transform: translateY(30px);
+              transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .scroll-reveal.revealed {
+              opacity: 1;
+              transform: translateY(0);
+            }
+
+            /* Details Modal animations */
+            @keyframes fadeInBackdrop {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes scaleUpModal {
+              from {
+                opacity: 0;
+                transform: scale(0.95) translateY(12px);
+              }
+              to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+              }
+            }
+
             #root-container::-webkit-scrollbar {
               display: none;
             }
@@ -930,21 +1149,91 @@ function App() {
               -ms-overflow-style: none;
               scrollbar-width: none;
             }
-            #scroll-content::-webkit-scrollbar {
-              display: none;
-            }
-            #scroll-content {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
-            #about-scroll-content::-webkit-scrollbar {
-              display: none;
-            }
-            #about-scroll-content {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
           `}</style>
+        </div>
+      )}
+
+      {/* STUNNING DETAILS MODAL POPUP */}
+      {selectedCourse && coursesData[selectedCourse] && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop glass blur */}
+          <div
+            onClick={() => setSelectedCourse(null)}
+            className="absolute inset-0 bg-slate-950/65 backdrop-blur-md transition-opacity duration-300 animate-[fadeInBackdrop_0.2s_ease-out] cursor-pointer"
+          />
+          
+          {/* Modal Card Box */}
+          <div 
+            dir={lang === 'ar' ? 'rtl' : 'ltr'}
+            className="relative bg-white border border-slate-200/80 shadow-2xl rounded-3xl p-6 sm:p-8 max-w-lg w-full z-10 space-y-6 mx-4 animate-[scaleUpModal_0.35s_cubic-bezier(0.34,1.56,0.64,1)] text-slate-800"
+          >
+            {/* Close button in top corner */}
+            <button
+              onClick={() => setSelectedCourse(null)}
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+              aria-label="Close details"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Badge & Course Title */}
+            <div className="space-y-2.5">
+              <span className="inline-flex px-3 py-1 rounded-full bg-ocean-twilight/10 text-xs font-bold text-ocean-twilight font-sans">
+                {coursesData[selectedCourse].badge}
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight select-text">
+                {selectedCourse === 'web' && t.webDevTitle}
+                {selectedCourse === 'mobile' && t.appDevTitle}
+                {selectedCourse === 'marketing' && t.marketingTitle}
+                {selectedCourse === 'business' && t.businessTitle}
+                {selectedCourse === 'iot' && t.iotTitle}
+                {selectedCourse === 'languages' && t.languagesTitle}
+                {selectedCourse === 'robotics' && t.roboticsTitle}
+              </h3>
+            </div>
+
+            {/* Curriculum Outlines */}
+            <div className="space-y-3.5">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-sans">
+                {lang === 'fr' ? "Programme de formation" : lang === 'en' ? "Course Outline" : "برنامج التكوين"}
+              </h4>
+              <ul className="space-y-3">
+                {coursesData[selectedCourse].curriculum.map((item, index) => (
+                  <li key={index} className="flex items-start gap-3.5 text-sm text-slate-600 font-sans leading-relaxed select-text">
+                    <span className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5 text-emerald-600">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Actions CTA row */}
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <a
+                href={`https://wa.me/123456789?text=${encodeURIComponent(coursesData[selectedCourse].whatsappText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-3.5 px-6 bg-[#25D366] hover:bg-[#22c35e] text-white text-center font-extrabold rounded-xl shadow-lg shadow-[#25D366]/20 transition-all duration-300 transform active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.451L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.115-2.908-6.995-1.878-1.88-4.357-2.912-6.997-2.914-5.443 0-9.868 4.42-9.873 9.864-.002 1.848.495 3.653 1.438 5.253l-.992 3.626 3.743-.982zM17.487 14.51c-.294-.147-1.736-.857-2.006-.955-.27-.098-.467-.147-.662.147-.196.294-.759.955-.931 1.15-.172.195-.344.22-.638.073-.294-.147-1.243-.458-2.37-1.462-.877-.783-1.47-1.75-1.642-2.045-.172-.295-.018-.454.13-.601.133-.13.294-.343.44-.515.15-.171.2-.294.3-.49.1-.197.05-.367-.025-.515-.074-.147-.662-1.594-.908-2.183-.24-.578-.48-.5-.662-.51-.17-.008-.367-.01-.563-.01-.196 0-.515.073-.784.367-.27.294-1.03 1.007-1.03 2.455 0 1.448 1.054 2.846 1.202 3.04.148.196 2.074 3.168 5.025 4.444.702.304 1.25.485 1.677.62.705.224 1.347.193 1.854.117.565-.084 1.736-.71 1.98-.1.244-.707.244-1.298 0-.147-.074-.097-.27-.147-.563-.294z"/>
+                </svg>
+                <span>{t.whatsappCTA}</span>
+              </a>
+              <button
+                onClick={() => setSelectedCourse(null)}
+                className="py-3 px-6 border border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-800 text-center font-extrabold rounded-xl transition-all cursor-pointer text-xs sm:text-sm font-sans"
+              >
+                {lang === 'fr' ? "Fermer" : lang === 'en' ? "Close" : "إغلاق"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>
@@ -1214,7 +1503,7 @@ function AdminView({ navigateTo, lang, setLang }: AdminViewProps) {
 
           </div>
 
-          {/* Lead Board Table */}
+          {/* Lead Table */}
           <div className="bg-slate-950/20 border border-slate-800 rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-800 font-extrabold text-xs tracking-wider text-slate-400 font-sans uppercase">
               Latest Admission Inquiries

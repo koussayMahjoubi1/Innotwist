@@ -55,6 +55,13 @@ export interface Translations {
   contactSocialsTitle: string;
   contactSocialsDesc: string;
   contactButton: string;
+  // Contact Form keys
+  contactFormName: string;
+  contactFormEmail: string;
+  contactFormSubject: string;
+  contactFormMessage: string;
+  contactFormSubmit: string;
+  contactFormSuccess: string;
   // Admin keys
   adminLoginTitle: string;
   adminLoginSubtitle: string;
@@ -121,6 +128,13 @@ export const locales: Record<Lang, Translations> = {
     contactSocialsTitle: "Réseaux Sociaux",
     contactSocialsDesc: "Suivez-nous sur Instagram & FB",
     contactButton: "Visiter le portail InnoTwist",
+    // Contact Form
+    contactFormName: "Votre nom complet",
+    contactFormEmail: "Votre adresse e-mail",
+    contactFormSubject: "Formation souhaitée",
+    contactFormMessage: "Votre message...",
+    contactFormSubmit: "Envoyer le message",
+    contactFormSuccess: "Votre message a été envoyé avec succès !",
     // Admin
     adminLoginTitle: "Espace Administrateur",
     adminLoginSubtitle: "Veuillez vous connecter pour gérer la plateforme.",
@@ -130,7 +144,7 @@ export const locales: Record<Lang, Translations> = {
     adminBackBtn: "Retour au site",
     adminInvalidCreds: "Adresse e-mail ou mot de passe incorrect.",
     adminDashboardTitle: "Tableau de Bord Admin",
-    adminLogoutBtn: "Se déconnecter"
+    adminLogoutBtn: "Se déconnécter"
   },
   en: {
     home: "Home",
@@ -185,6 +199,13 @@ export const locales: Record<Lang, Translations> = {
     contactSocialsTitle: "Social Portals",
     contactSocialsDesc: "Follow us on Instagram & FB",
     contactButton: "Open InnoTwist Link Hub",
+    // Contact Form
+    contactFormName: "Your Full Name",
+    contactFormEmail: "Your Email Address",
+    contactFormSubject: "Interested Course",
+    contactFormMessage: "Your message...",
+    contactFormSubmit: "Send Message",
+    contactFormSuccess: "Your message has been sent successfully!",
     // Admin
     adminLoginTitle: "Admin Portal",
     adminLoginSubtitle: "Please sign in to manage the platform.",
@@ -249,6 +270,13 @@ export const locales: Record<Lang, Translations> = {
     contactSocialsTitle: "حساباتنا الاجتماعية",
     contactSocialsDesc: "تابعنا على إنستغرام وفيسبوك",
     contactButton: "افتح بوابة إينوتويست للاتصال",
+    // Contact Form
+    contactFormName: "الاسم الكامل",
+    contactFormEmail: "البريد الإلكتروني",
+    contactFormSubject: "التكوين المطلوب",
+    contactFormMessage: "رسالتك هنا...",
+    contactFormSubmit: "إرسال الرسالة",
+    contactFormSuccess: "تم إرسال رسالتك بنجاح!",
     // Admin
     adminLoginTitle: "بوابة المشرف",
     adminLoginSubtitle: "يرجى تسجيل الدخول لإدارة المنصة.",
