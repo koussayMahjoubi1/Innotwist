@@ -30,12 +30,13 @@
 /* Tailwind CSS v4 Theme Extension */
 @theme {
   --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-hand: 'Caveat', cursive;
+  --font-hand: 'Patrick Hand', cursive;
 
-  --color-ocean-blue: var(--ocean-blue);
-  --color-ocean-twilight: var(--ocean-twilight);
-  --color-laser-blue: var(--laser-blue);
-  --color-white-2: var(--white-2);
+  /* Direct Hex color mappings to avoid variables scoping issues in bundlers */
+  --color-ocean-blue: #138EC9;
+  --color-ocean-twilight: #414ABE;
+  --color-laser-blue: #2E5FC4;
+  --color-white-2: #FFFFFF;
 
   --background-image-gradient-top: var(--gradient-top);
   --background-image-gradient-right: var(--gradient-right);
