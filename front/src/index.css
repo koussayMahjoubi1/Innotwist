@@ -1,9 +1,23 @@
 @import "tailwindcss";
 @import "./colors.css";
 
-html, body, #root {
+html {
   margin: 0;
   padding: 0;
   background-color: #FAF8F4;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #FAF8F4;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
   width: 100%;
 }

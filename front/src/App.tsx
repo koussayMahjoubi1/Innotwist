@@ -193,7 +193,7 @@ function App() {
       },
       {
         root: null,
-        rootMargin: '0px 0px -12% 0px',
+        rootMargin: '0px 0px -6% 0px',
         threshold: 0.05
       }
     )
@@ -331,7 +331,7 @@ function App() {
         <div
           id="root-container"
           dir={lang === 'ar' ? 'rtl' : 'ltr'}
-          className="min-h-screen bg-[#FAF8F4] text-slate-800 font-sans px-4 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-3 flex flex-col transition-all duration-300 relative overflow-y-auto overflow-x-hidden scroll-smooth"
+          className="min-h-screen bg-[#FAF8F4] text-slate-800 font-sans px-4 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-3 flex flex-col transition-all duration-300 relative scroll-smooth"
         >
           {/* Background visuals wrapper - clipped to prevent height/width stretching from absolute glows */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -353,7 +353,10 @@ function App() {
           </div>
 
           {/* Floating Sticky Navbar */}
-          <header className="sticky top-0 w-full max-w-5xl mx-auto z-50 mb-8 sm:mb-12 px-1 sm:px-0">
+          <header 
+            className="sticky top-4 w-full max-w-5xl mx-auto z-50 mb-8 sm:mb-12 px-1 sm:px-0"
+            style={{ position: 'sticky', top: '1rem', zIndex: 50 }}
+          >
             <div className="bg-white/80 backdrop-blur-lg border border-slate-200/50 shadow-md rounded-full px-4 sm:px-6 py-3 flex items-center justify-between gap-4 animate-[fadeIn_0.5s_ease-out] relative">
               
               {/* Logo Section */}
@@ -1022,14 +1025,7 @@ function App() {
                       </button>
                     </li>
                   ))}
-                  <li>
-                    <button
-                      onClick={() => navigateTo('/admin')}
-                      className="hover:text-ocean-twilight transition-colors cursor-pointer text-slate-400"
-                    >
-                      {t.adminLoginTitle}
-                    </button>
-                  </li>
+
                 </ul>
               </div>
 
@@ -1118,8 +1114,9 @@ function App() {
             /* Scroll Reveal Animations */
             .scroll-reveal {
               opacity: 0;
-              transform: translateY(30px);
-              transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+              transform: translateY(20px);
+              transition: opacity 1.3s cubic-bezier(0.22, 1, 0.36, 1), transform 1.3s cubic-bezier(0.22, 1, 0.36, 1);
+              will-change: opacity, transform;
             }
             .scroll-reveal.revealed {
               opacity: 1;
