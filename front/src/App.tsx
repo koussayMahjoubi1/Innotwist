@@ -7,6 +7,94 @@ import mouseScrollAnimation from './assets/mouse scroll animation.json'
 
 const Lottie = (LottieComponent as any).default || LottieComponent
 
+const techStack = [
+  {
+    name: "React JS",
+    icon: (
+      <svg className="w-5.5 h-5.5 shrink-0" viewBox="-11.5 -10.23174 23 20.46348" fill="none" stroke="#61DAFB" strokeWidth="1.2">
+        <circle cx="0" cy="0" r="2.05" fill="#61DAFB"/>
+        <g stroke="#61DAFB" strokeWidth="1.2">
+          <ellipse rx="11" ry="4.2"/>
+          <ellipse rx="11" ry="4.2" transform="rotate(60)"/>
+          <ellipse rx="11" ry="4.2" transform="rotate(120)"/>
+        </g>
+      </svg>
+    )
+  },
+  {
+    name: "Node JS",
+    icon: (
+      <svg className="w-5.5 h-5.5 shrink-0 fill-[#339933]" viewBox="0 0 24 24">
+        <path d="M12 24a1.8 1.8 0 01-.9-.25L2.83 18.2A1.8 1.8 0 011.93 16.65V5.59a1.8 1.8 0 01.9-1.55l8.28-4.78a1.8 1.8 0 011.78 0l8.28 4.78a1.8 1.8 0 01.9 1.55v11.06a1.8 1.8 0 01-.9 1.55l-8.28 4.78a1.8 1.8 0 01-.89.24zM11.99 1.48l-8.25 4.76V16.7l8.26 4.77 8.25-4.77V6.24l-8.24-4.76z"/>
+      </svg>
+    )
+  },
+  {
+    name: "Spring Boot",
+    icon: (
+      <svg className="w-5.5 h-5.5 shrink-0 fill-[#6DB33F]" viewBox="0 0 24 24">
+        <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm5.82 17.653c-.372.316-.928.337-1.378.1-.885-.466-2.553-1.745-3.328-2.52-1.362-1.362-2.137-3.083-2.61-4.808C8.98 12.015 7.18 12.986 6.07 14.032c-.378.358-.934.34-1.332-.058a.94.94 0 0 1 .01-1.334c1.478-1.42 3.864-2.66 5.897-2.66.902 0 1.693.245 2.274.723a10.976 10.976 0 0 1 1.708 3.52c.62.62 1.792 1.545 2.52 1.943.439.24.583.748.272 1.137-.082.1-.184.225-.298.35zm.776-6.197c-1.332-1.333-3.237-2.1-5.187-2.316 2.015-.816 4.148-.52 5.753.867a.942.942 0 0 1-.03 1.48c-.164.133-.357.082-.536-.03z"/>
+      </svg>
+    )
+  },
+  {
+    name: "Java",
+    icon: (
+      <svg className="w-5.5 h-5.5 shrink-0" viewBox="0 0 24 24" fill="none">
+        <path d="M2 19h18v2H2v-2zm16-9h2a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-2v-8zm-2 0H4v8h12v-8zM6 3c0 2 2 2 2 4s-2 2-2 4h2c0-2 2-2 2-4s-2-2-2-4H6zm5 0c0 2 2 2 2 4s-2 2-2 4h2c0-2 2-2 2-4s-2-2-2-4h-2z" fill="#007396"/>
+      </svg>
+    )
+  },
+  {
+    name: "Flutter",
+    icon: (
+      <svg className="w-5.5 h-5.5 shrink-0 fill-[#02569B]" viewBox="0 0 24 24">
+        <path d="M14.314 0L2.3 12l4.374 4.374L22.986 0H14.314zm8.672 12.314l-4.374-4.374L6.6 20h8.672l7.714-7.686zm0 0H14.314l-4.37 4.37 4.37 4.37H22.986l-4.34-4.37 4.34-4.37z" />
+      </svg>
+    )
+  },
+  {
+    name: "Illustrator",
+    icon: (
+      <div className="w-5.5 h-5.5 rounded bg-[#330000] border border-[#FF9A00] flex items-center justify-center font-sans text-[9px] font-black text-[#FF9A00] select-none shrink-0">
+        Ai
+      </div>
+    )
+  },
+  {
+    name: "Premiere Pro",
+    icon: (
+      <div className="w-5.5 h-5.5 rounded bg-[#14001F] border border-[#EA77FF] flex items-center justify-center font-sans text-[9px] font-black text-[#EA77FF] select-none shrink-0">
+        Pr
+      </div>
+    )
+  },
+  {
+    name: "After Effects",
+    icon: (
+      <div className="w-5.5 h-5.5 rounded bg-[#000033] border border-[#9999FF] flex items-center justify-center font-sans text-[9px] font-black text-[#9999FF] select-none shrink-0">
+        Ae
+      </div>
+    )
+  },
+  {
+    name: "Figma",
+    icon: (
+      <svg className="w-5.5 h-5.5 shrink-0" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C9.238 2 7 4.238 7 7c0 2.274 1.517 4.195 3.6 4.795C8.517 12.39 7 14.31 7 17c0 2.762 2.238 5 5 5s5-2.238 5-5c0-2.69-1.517-4.61-3.6-5.205C15.483 11.195 17 9.274 17 7c0-2.762-2.238-5-5-5zm-3 5c0-1.657 1.343-3 3-3s3 1.343 3 3-1.343 3-3 3-3-1.343-3-3zm3 12c-1.657 0-3-1.343-3-3s1.343-3 3-3h3v3c0 1.657-1.343 3-3 3z" fill="#F24E1E"/>
+      </svg>
+    )
+  },
+  {
+    name: "Arduino",
+    icon: (
+      <svg className="w-5.5 h-5.5 shrink-0 fill-[#00979D]" viewBox="0 0 24 24">
+        <path d="M7.5 15A4.5 4.5 0 0 1 3 10.5 4.5 4.5 0 0 1 7.5 6c1.68 0 3.14.93 3.9 2.3-.5.5-.9 1.1-1.2 1.7A2.5 2.5 0 0 0 7.5 8 2.5 2.5 0 0 0 5 10.5 2.5 2.5 0 0 0 7.5 13a2.5 2.5 0 0 0 2.7-2c.3.6.7 1.2 1.2 1.7-.76 1.37-2.22 2.3-3.9 2.3zm9 0c-1.68 0-3.14-.93-3.9-2.3.5-.5.9-1.1 1.2-1.7a2.5 2.5 0 0 0 2.7 2 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5c-1.25 0-2.3.8-2.7 2-.3-.6-.7-1.2-1.2-1.7.76-1.37 2.22-2.3 3.9-2.3a4.5 4.5 0 0 1 4.5 4.5 4.5 4.5 0 0 1-4.5 4.5zm-9-5.5h3v1h-3v-1zm9 0h3v1h-3v-1zm1.5-1.5v3h-1v-3h1z" />
+      </svg>
+    )
+  }
+]
+
 type Section = 'home' | 'formations' | 'about' | 'contact'
 
 function App() {
@@ -18,6 +106,19 @@ function App() {
   
   // Selected course details popup state
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null)
+  const [activeCardIndex, setActiveCardIndex] = useState(0)
+
+  const handleCardsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget
+    const scrollLeft = container.scrollLeft
+    const cardEl = container.querySelector('.snap-center')
+    if (cardEl) {
+      const cardWidth = cardEl.clientWidth
+      const gap = 24 // gap-6 is 24px
+      const index = Math.round(scrollLeft / (cardWidth + gap))
+      setActiveCardIndex(Math.min(6, Math.max(0, index)))
+    }
+  }
 
   // Lightweight Client-side Routing state for Admin view
   const [currentPath, setCurrentPath] = useState(() => {
@@ -330,7 +431,6 @@ function App() {
         /* MAIN LANDING PAGE WEBSITE CONTAINER */
         <div
           id="root-container"
-          dir={lang === 'ar' ? 'rtl' : 'ltr'}
           className="min-h-screen bg-[#FAF8F4] text-slate-800 font-sans px-4 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-3 flex flex-col transition-all duration-300 relative scroll-smooth"
         >
           {/* Background visuals wrapper - clipped to prevent height/width stretching from absolute glows */}
@@ -514,7 +614,7 @@ function App() {
 
                   <div className="pt-2 flex justify-center lg:justify-start">
                     <a
-                      href="https://wa.me/123456789"
+                      href="https://wa.me/21655000242"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-3.5 px-6 py-3 sm:px-8 sm:py-4 bg-[#25D366] hover:bg-[#22c35e] text-white rounded-full font-extrabold shadow-xl shadow-[#25D366]/25 hover:shadow-[#25D366]/35 transition-all duration-300 transform active:scale-95 text-xs sm:text-sm"
@@ -559,8 +659,11 @@ function App() {
                 </p>
               </div>
 
-              {/* Glassmorphic & Glowing Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full mt-12 max-w-5xl px-4 sm:px-6">
+              {/* Glassmorphic & Glowing Cards Grid (Swipable Carousel on Mobile) */}
+              <div 
+                onScroll={handleCardsScroll}
+                className="formations-mobile-carousel scrollbar-none grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full mt-12 max-w-5xl px-4 sm:px-6"
+              >
                 
                 {/* 1. Web Development */}
                 <div
@@ -746,7 +849,48 @@ function App() {
                 </div>
 
               </div>
+
+              {/* Pagination Dots Indicator - Visible only on mobile */}
+              <div className="flex md:hidden items-center justify-center gap-2 mt-6 select-none">
+                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      activeCardIndex === i ? 'w-4.5 bg-ocean-twilight' : 'w-1.5 bg-slate-300'
+                    }`}
+                  />
+                ))}
+              </div>
+
             </section>
+
+            {/* Infinite Moving Technologies Stripbar */}
+            <div 
+              className="w-screen relative my-8 py-5 bg-white/45 backdrop-blur-md border-y border-slate-200/50 overflow-hidden select-none flex items-center z-10 scroll-reveal"
+              style={{ left: '50%', transform: 'translateX(-50%)' }}
+            >
+              {/* Fade gradient overlays */}
+              <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#FAF8F4] to-transparent z-15 pointer-events-none" />
+              <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#FAF8F4] to-transparent z-15 pointer-events-none" />
+
+              {/* Scrolling wrapper (duplicated list for seamless scrolling loop) */}
+              <div className="scroll-ticker-container flex gap-12 sm:gap-16 items-center whitespace-nowrap">
+                {/* First list */}
+                {techStack.map((tech, index) => (
+                  <div key={`tech-1-${index}`} className="inline-flex items-center gap-3 text-xs sm:text-sm font-extrabold text-slate-700 hover:text-ocean-twilight tracking-wider font-sans uppercase transition-colors duration-300">
+                    {tech.icon}
+                    <span>{tech.name}</span>
+                  </div>
+                ))}
+                {/* Duplicated list */}
+                {techStack.map((tech, index) => (
+                  <div key={`tech-2-${index}`} className="inline-flex items-center gap-3 text-xs sm:text-sm font-extrabold text-slate-700 hover:text-ocean-twilight tracking-wider font-sans uppercase transition-colors duration-300">
+                    {tech.icon}
+                    <span>{tech.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* 3. ABOUT SECTION */}
             <section id="about" className="w-full flex flex-col items-center py-4 scroll-mt-24 scroll-reveal">
@@ -785,6 +929,108 @@ function App() {
                   </div>
                 </div>
 
+              </div>
+
+              {/* Creative Photo Gallery Sub-section */}
+              <div className="w-full mt-16 sm:mt-24 space-y-8 select-none">
+                {/* Small section header */}
+                <div className="text-center space-y-2 max-w-lg mx-auto px-4">
+                  <span className="text-[10px] font-black text-ocean-twilight uppercase tracking-widest font-sans">
+                    {lang === 'fr' ? "Notre Espace en Images" : lang === 'en' ? "Our Space in Pictures" : "معرض صورنا"}
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    {lang === 'fr' ? "Aperçu de la vie à l'Académie" : lang === 'en' ? "A glimpse of life at the Academy" : "لمحة عن الحياة في الأكاديمية"}
+                  </h3>
+                </div>
+
+                {/* Polaroid Collage Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-6 lg:gap-8 w-full max-w-5xl px-4 sm:px-6 mx-auto mt-8">
+                  {/* Photo 1: Workspace */}
+                  <div className="col-span-1 md:col-span-4 flex justify-center">
+                    <div className="bg-[#FCFCFA] p-3.5 pb-12 rounded-xl border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] cursor-pointer w-full max-w-[280px] md:max-w-none scroll-reveal polaroid-reveal polaroid-card-1">
+                      <div className="aspect-square rounded-lg overflow-hidden relative group bg-slate-100">
+                        <img 
+                          src="https://i.postimg.cc/6qG2vsVK/Whats-App-Image-2026-07-07-at-4-05-26-PM-(3).jpg" 
+                          alt="Online Sessions" 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="text-center font-hand text-slate-700 text-base mt-3 select-text">
+                        {lang === 'fr' ? 'Sessions en Ligne' : lang === 'en' ? 'Online Sessions' : 'حصص عبر الإنترنت'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Photo 2: Robotics & IoT Lab */}
+                  <div className="col-span-1 md:col-span-4 flex justify-center">
+                    <div className="bg-[#FCFCFA] p-3.5 pb-12 rounded-xl border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] cursor-pointer w-full max-w-[280px] md:max-w-none scroll-reveal polaroid-reveal polaroid-card-2">
+                      <div className="aspect-square rounded-lg overflow-hidden relative group bg-slate-100">
+                        <img 
+                          src="https://i.postimg.cc/xqDkGsgN/Whats-App-Image-2026-07-07-at-4-05-27-PM.jpg" 
+                          alt="Robotics Lab" 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="text-center font-hand text-slate-700 text-base mt-3 select-text">
+                        {lang === 'fr' ? 'Lab Robotique' : lang === 'en' ? 'Robotics Lab' : 'مختبر الروبوتات'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Photo 3: Workshop Collaboration */}
+                  <div className="col-span-1 md:col-span-4 flex justify-center">
+                    <div className="bg-[#FCFCFA] p-3.5 pb-12 rounded-xl border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] cursor-pointer w-full max-w-[280px] md:max-w-none scroll-reveal polaroid-reveal polaroid-card-3">
+                      <div className="aspect-square rounded-lg overflow-hidden relative group bg-slate-100">
+                        <img 
+                          src="https://i.postimg.cc/F15fbPGN/Whats-App-Image-2026-07-07-at-4-05-26-PM.jpg" 
+                          alt="Get Certified" 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="text-center font-hand text-slate-700 text-base mt-3 select-text">
+                        {lang === 'fr' ? 'Certifications' : lang === 'en' ? 'Get Certified' : 'احصل على شهادة'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Photo 4: Creative Design Studio */}
+                  <div className="col-span-1 sm:col-span-1 md:col-span-6 flex justify-center">
+                    <div className="bg-[#FCFCFA] p-3.5 pb-12 rounded-xl border border-slate-200/50 shadow-[0_4px_20px_rgba(0,0,0,0.06)] cursor-pointer w-full max-w-[280px] md:max-w-none scroll-reveal polaroid-reveal polaroid-card-4">
+                      <div className="aspect-[4/3] rounded-lg overflow-hidden relative group bg-slate-100">
+                        <img 
+                          src="https://i.postimg.cc/KzW3jcMH/Whats-App-Image-2026-07-07-at-4-05-25-PM-(1).jpg" 
+                          alt="Design & Créativité" 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="text-center font-hand text-slate-700 text-base mt-3 select-text">
+                        {lang === 'fr' ? 'Événements Communautaires' : lang === 'en' ? 'Community Events' : 'فعاليات المجتمع'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Photo 5: Kids Arduino Workshop */}
+                  <div className="col-span-1 sm:col-span-1 md:col-span-6 flex justify-center">
+                    <div className="bg-[#FCFCFA] p-3.5 pb-12 rounded-xl border border-slate-200/50 shadow-[0_4px_20px_rgba(0,0,0,0.06)] cursor-pointer w-full max-w-[280px] md:max-w-none scroll-reveal polaroid-reveal polaroid-card-5">
+                      <div className="aspect-[4/3] rounded-lg overflow-hidden relative group bg-slate-100">
+                        <img 
+                          src="https://i.postimg.cc/NLqy8NbY/Whats-App-Image-2026-07-07-at-4-05-27-PM-(1).jpg" 
+                          alt="Kids Coding Space" 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="text-center font-hand text-slate-700 text-base mt-3 select-text">
+                        {lang === 'fr' ? 'Espace Kids Coding' : lang === 'en' ? 'Kids Coding Space' : 'برمجة الصغار'}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </section>
 
@@ -948,7 +1194,7 @@ function App() {
 
                   {/* 3. WhatsApp Card */}
                   <a
-                    href="https://bio.link/innotwistacademy"
+                    href="https://wa.me/21655000242"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl p-5 shadow-sm hover:bg-white/90 hover:border-[#25D366]/40 hover:shadow-[0_20px_40px_rgba(37,211,102,0.15)] transition-all duration-500 transform hover:-translate-y-0.5 flex flex-col justify-between"
@@ -1041,7 +1287,7 @@ function App() {
                 {/* Social icons row */}
                 <div className="flex justify-center md:justify-start items-center gap-3">
                   <a
-                    href="https://bio.link/innotwistacademy"
+                    href="https://wa.me/21655000242"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-8 h-8 rounded-full bg-slate-100 hover:bg-ocean-twilight/10 border border-slate-200/50 flex items-center justify-center text-slate-500 hover:text-ocean-twilight transition-all"
@@ -1080,8 +1326,19 @@ function App() {
 
             {/* Copyright Sub-row */}
             <div className="h-[1px] bg-slate-200/60 my-5" />
-            <div className="text-[10px] text-slate-400 text-center font-sans">
-              &copy; {new Date().getFullYear()} InnoTwist. {t.copyright}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-400 font-sans pb-4">
+              <div>
+                &copy; {new Date().getFullYear()} InnoTwist. {t.copyright}
+              </div>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 hover:border-ocean-twilight/30 hover:text-ocean-twilight shadow-sm transition-all duration-300 font-extrabold text-[9px] uppercase tracking-wider cursor-pointer group"
+              >
+                <span>{lang === 'fr' ? 'Retour en haut' : lang === 'en' ? 'Back to top' : 'العودة إلى الأعلى'}</span>
+                <svg className="w-3 h-3 transform group-hover:-translate-y-0.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
             </div>
           </footer>
 
@@ -1123,6 +1380,92 @@ function App() {
               transform: translateY(0);
             }
 
+            /* Premium Polaroid Elastic Swing Reveal & Hover Animations */
+            .polaroid-reveal {
+              opacity: 0;
+              will-change: opacity, transform;
+              transition: opacity 1.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 1.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+            }
+            
+            /* Polaroid 1 */
+            .polaroid-card-1 {
+              transform: translateY(50px) rotate(-15deg) scale(0.85);
+            }
+            .polaroid-card-1.revealed {
+              opacity: 1;
+              transform: translateY(0) rotate(-3deg) scale(1);
+            }
+            .polaroid-card-1.revealed:hover {
+              transition-delay: 0ms !important;
+              transform: translateY(-16px) rotate(0deg) scale(1.05) !important;
+              box-shadow: 0 25px 40px rgba(0, 0, 0, 0.12) !important;
+              z-index: 40 !important;
+            }
+
+            /* Polaroid 2 */
+            .polaroid-card-2 {
+              transform: translateY(50px) rotate(15deg) scale(0.85);
+              transition-delay: 350ms;
+            }
+            .polaroid-card-2.revealed {
+              opacity: 1;
+              transform: translateY(0) rotate(2deg) scale(1);
+            }
+            .polaroid-card-2.revealed:hover {
+              transition-delay: 0ms !important;
+              transform: translateY(-16px) rotate(0deg) scale(1.05) !important;
+              box-shadow: 0 25px 40px rgba(0, 0, 0, 0.12) !important;
+              z-index: 40 !important;
+            }
+
+            /* Polaroid 3 */
+            .polaroid-card-3 {
+              transform: translateY(50px) rotate(-12deg) scale(0.85);
+              transition-delay: 700ms;
+            }
+            .polaroid-card-3.revealed {
+              opacity: 1;
+              transform: translateY(0) rotate(-1deg) scale(1);
+            }
+            .polaroid-card-3.revealed:hover {
+              transition-delay: 0ms !important;
+              transform: translateY(-16px) rotate(0deg) scale(1.05) !important;
+              box-shadow: 0 25px 40px rgba(0, 0, 0, 0.12) !important;
+              z-index: 40 !important;
+            }
+
+            /* Polaroid 4 */
+            .polaroid-card-4 {
+              transform: translateY(50px) rotate(18deg) scale(0.85);
+              transition-delay: 1050ms;
+            }
+            .polaroid-card-4.revealed {
+              opacity: 1;
+              transform: translateY(0) rotate(3deg) scale(1);
+            }
+            .polaroid-card-4.revealed:hover {
+              transition-delay: 0ms !important;
+              transform: translateY(-16px) rotate(0deg) scale(1.05) !important;
+              box-shadow: 0 25px 40px rgba(0, 0, 0, 0.12) !important;
+              z-index: 40 !important;
+            }
+
+            /* Polaroid 5 */
+            .polaroid-card-5 {
+              transform: translateY(50px) rotate(-15deg) scale(0.85);
+              transition-delay: 1400ms;
+            }
+            .polaroid-card-5.revealed {
+              opacity: 1;
+              transform: translateY(0) rotate(-2deg) scale(1);
+            }
+            .polaroid-card-5.revealed:hover {
+              transition-delay: 0ms !important;
+              transform: translateY(-16px) rotate(0deg) scale(1.05) !important;
+              box-shadow: 0 25px 40px rgba(0, 0, 0, 0.12) !important;
+              z-index: 40 !important;
+            }
+
             /* Details Modal animations */
             @keyframes fadeInBackdrop {
               from { opacity: 0; }
@@ -1136,6 +1479,57 @@ function App() {
               to {
                 opacity: 1;
                 transform: scale(1) translateY(0);
+              }
+            }
+
+            /* Technology Ticker Scroll Animation */
+            @keyframes scrollTicker {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+            .scroll-ticker-container {
+              display: flex;
+              width: max-content;
+              animation: scrollTicker 30s linear infinite;
+            }
+            .scroll-ticker-container:hover {
+              animation-play-state: paused;
+            }
+
+            /* Hide scrollbar utility for swipable carousel container */
+            .scrollbar-none::-webkit-scrollbar {
+              display: none;
+            }
+            .scrollbar-none {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+
+            /* Swipable formations carousel for mobile viewports */
+            @media (max-width: 767px) {
+              .formations-mobile-carousel {
+                display: flex !important;
+                overflow-x: auto !important;
+                scroll-snap-type: x mandatory !important;
+                scroll-behavior: smooth !important;
+                gap: 1.5rem !important;
+                width: 100% !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+              }
+              .formations-mobile-carousel > div {
+                scroll-snap-align: center !important;
+                flex-shrink: 0 !important;
+                width: 85% !important;
+              }
+            }
+            @media (min-width: 640px) and (max-width: 767px) {
+              .formations-mobile-carousel > div {
+                width: 70% !important;
               }
             }
 
@@ -1161,7 +1555,6 @@ function App() {
           
           {/* Modal Card Box */}
           <div 
-            dir={lang === 'ar' ? 'rtl' : 'ltr'}
             className="relative bg-white border border-slate-200/80 shadow-2xl rounded-3xl p-6 sm:p-8 max-w-lg w-full z-10 space-y-6 mx-4 animate-[scaleUpModal_0.35s_cubic-bezier(0.34,1.56,0.64,1)] text-slate-800"
           >
             {/* Close button in top corner */}
@@ -1213,7 +1606,7 @@ function App() {
             {/* Actions CTA row */}
             <div className="pt-2 flex flex-col sm:flex-row gap-3">
               <a
-                href={`https://wa.me/123456789?text=${encodeURIComponent(coursesData[selectedCourse].whatsappText)}`}
+                href={`https://wa.me/21655000242?text=${encodeURIComponent(coursesData[selectedCourse].whatsappText)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 py-3.5 px-6 bg-[#25D366] hover:bg-[#22c35e] text-white text-center font-extrabold rounded-xl shadow-lg shadow-[#25D366]/20 transition-all duration-300 transform active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
